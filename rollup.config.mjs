@@ -9,11 +9,10 @@ import commonjs from "@rollup/plugin-commonjs";
 // 处理css需要用到的插件是rollup-plugin-postcss。它支持css文件的加载、css加前缀、css压缩、对scss/less的支持等等
 import postcss from "rollup-plugin-postcss";
 
-
 const config = {
   input: "./index.js",
   output: {
-    file: "./dist/electronic-signature.es.js",
+    file: "./dist/serach-table.es.js",
     format: "es", // 编译模式
   },
   plugins: [
@@ -33,6 +32,11 @@ const config = {
     commonjs(),
     postcss(),
   ],
-  external: ['vue', 'element-plus', 'element-plus/dist/index.css'] // 依赖模块
+  external: [
+    "vue",
+    "element-plus",
+    "element-plus/dist/index.css",
+    "@element-plus/icons-vue",
+  ], // 依赖模块
 };
 export default config;

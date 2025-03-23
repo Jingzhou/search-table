@@ -1,6 +1,6 @@
 {
   "name": "jz-search-table",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "search-table component by element-plus",
   "main": "search-table.es.js",
   "scripts": {

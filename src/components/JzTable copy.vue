@@ -18,7 +18,7 @@
             </el-button>
           </template>
           <div>
-            <div v-for="item in config" :key="item.prop">
+            <div v-for="item in localConfig" :key="item.prop">
               <el-checkbox
                 :model-value="item.isShow"
                 :label="item.label"
@@ -40,7 +40,7 @@
         @header-dragend="handleHeaderDragend"
       >
         <template
-          v-for="(item, index) in config.filter((item) => item.isShow)"
+          v-for="(item, index) in configFilter.filter((item) => item.isShow)"
           :key="index"
         >
           <slot
@@ -122,7 +122,7 @@
  * tableName: 表单的key，isSetting为true时生效，且必填
  * isSetting: 是否显示设置按钮
  * */
-import { ref, onUnmounted, onBeforeMount, nextTick } from "vue";
+import { ref, onUnmounted, onBeforeMount, computed, nextTick } from "vue";
 import {
   ElCard,
   ElTable,
@@ -185,6 +185,48 @@ const JzTable = {
   setup(props, context) {
     const table = ref();
     const tableKey = ref(1);
+    const localConfig = ref([]);
+    const configFilter = computed(() => {
+      // 可以自定义列
+      if (props.isSetting && props.tableName) {
+        // 自定义配置
+        let customConfig = [];
+        // 缓存中没有，使用默认配置
+        if (!localConfig.value.length) {
+          customConfig = props.config.map((item) => {
+            return { ...item, isShow: true };
+          });
+        } else {
+          // 缓存中有，使用缓存中的配置
+          customConfig = props.config.map((item) => {
+            const config = localConfig.value.find((i) => i.prop === item.prop);
+            if (config) {
+              return { ...item, ...config };
+            } else {
+              return { ...item, isShow: true };
+            }
+          });
+        }
+        localConfig.value = customConfig.map((item) => {
+          return {
+            label: item.label,
+            prop: item.prop,
+            isShow: item.isShow,
+            width: item.width,
+          };
+        });
+        // 缓存
+        localStorage.setItem(
+          props.tableName,
+          JSON.stringify(localConfig.value)
+        );
+        return customConfig;
+      }
+      // 不可以自定义列，直接返回配置
+      return props.config.map((item) => {
+        return { ...item, isShow: true };
+      });
+    });
     const handleSizeChange = (value) => {
       context.emit("pageSizeChange", value);
     };
@@ -193,46 +235,22 @@ const JzTable = {
     };
     // 复选框改变
     const checkboxChange = async (value, prop) => {
-      props.config.forEach(async (item) => {
+      localConfig.value.forEach(async (item) => {
         if (item.prop === prop) {
           item.isShow = value;
         }
       });
-      localStorage.setItem(
-        props.tableName,
-        JSON.stringify(
-          props.config.map((item) => {
-            return {
-              prop: item.prop,
-              isShow: item.isShow,
-              width: item.width,
-            };
-          })
-        )
-      );
       // 强制重新渲染表格（慎用）
       await nextTick();
       tableKey.value++;
     };
     // 表头拖拽改变宽度
     const handleHeaderDragend = async (newWidth, oldWidth, column) => {
-      props.config.forEach(async (item) => {
+      localConfig.value.forEach(async (item) => {
         if (item.prop === column.property) {
           item.width = newWidth;
         }
       });
-      localStorage.setItem(
-        props.tableName,
-        JSON.stringify(
-          props.config.map((item) => {
-            return {
-              prop: item.prop,
-              isShow: item.isShow,
-              width: item.width,
-            };
-          })
-        )
-      );
       // 强制重新渲染表格（慎用）
       await nextTick();
       tableKey.value++;
@@ -243,48 +261,10 @@ const JzTable = {
     });
     // 渲染前，获取缓存中的配置
     onBeforeMount(() => {
-      // 可以自定义列
-      nextTick(() => {
-        if (props.isSetting && props.tableName) {
-          const localConfig =
-            JSON.parse(localStorage.getItem(props.tableName)) || [];
-          // 缓存中没有，使用默认配置
-          if (!localConfig.length) {
-            props.config.forEach((item) => {
-              item.isShow = true;
-            });
-          } else {
-            // 缓存中有，使用缓存中的配置
-            props.config.forEach((item) => {
-              const config = localConfig.find((i) => i.prop === item.prop);
-              if (config) {
-                item.isShow = config.isShow;
-                item.width = config.width;
-              } else {
-                item.isShow = true;
-              }
-            });
-          }
-          // 缓存
-          localStorage.setItem(
-            props.tableName,
-            JSON.stringify(
-              props.config.map((item) => {
-                return {
-                  prop: item.prop,
-                  isShow: item.isShow,
-                  width: item.width,
-                };
-              })
-            )
-          );
-        } else {
-          // 不可以自定义列，直接返回配置
-          props.config.forEach((item) => {
-            item.isShow = true;
-          });
-        }
-      });
+      if (props.isSetting && props.tableName) {
+        localConfig.value =
+          JSON.parse(localStorage.getItem(props.tableName)) || []; // 缓存中的配置
+      }
     });
     return {
       handleSizeChange,
@@ -293,6 +273,8 @@ const JzTable = {
       tableKey,
       checkboxChange,
       handleHeaderDragend,
+      configFilter,
+      localConfig,
     };
   },
   directives: {
@@ -338,6 +320,8 @@ export default JzTable;
   .tableTitleWrap {
     display: flex;
     justify-content: space-between;
+    // .tableOperation {
+    // }
     .setting {
       display: flex;
       justify-content: center;

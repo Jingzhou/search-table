@@ -1,5 +1,6 @@
-import { toRefs, resolveComponent, openBlock, createBlock, withCtx, createVNode, createElementBlock, Fragment, renderList, createCommentVNode, mergeProps, renderSlot, createTextVNode, ref, resolveDirective, withDirectives, createElementVNode } from 'vue';
-import { ElCard, ElForm, ElFormItem, ElOption, ElSelect, ElInput, ElDatePicker, ElCascader, ElButton, ElTable, ElTableColumn, ElPagination } from 'element-plus';
+import { toRefs, resolveComponent, openBlock, createBlock, withCtx, createVNode, createElementBlock, Fragment, renderList, createCommentVNode, mergeProps, renderSlot, createTextVNode, ref, onUnmounted, onBeforeMount, nextTick, resolveDirective, withDirectives, createElementVNode } from 'vue';
+import { ElCard, ElForm, ElFormItem, ElOption, ElSelect, ElInput, ElDatePicker, ElCascader, ElButton, ElTable, ElTableColumn, ElPagination, ElIcon, ElPopover, ElCheckbox } from 'element-plus';
+import { Setting } from '@element-plus/icons-vue';
 import 'element-plus/dist/index.css';
 
 const JzSearch = {
@@ -209,7 +210,17 @@ JzSearch.__scopeId = "data-v-ce561170";
 JzSearch.__file = "src/components/JzSearch.vue";
 
 const JzTable = {
-  components: { ElCard, ElTable, ElTableColumn, ElPagination },
+  components: {
+    ElCard,
+    ElTable,
+    ElTableColumn,
+    ElPagination,
+    ElButton,
+    ElIcon,
+    Setting,
+    ElPopover,
+    ElCheckbox,
+  },
   props: {
     title: {
       type: String,
@@ -235,20 +246,127 @@ const JzTable = {
       type: Object,
       default: { pageEl: "", elList: [], DValue: 0 },
     },
+    tableName: {
+      type: String,
+      default: null,
+    },
+    isSetting: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: ["pageSizeChange", "currentPageChange", "selectChange"],
   setup(props, context) {
     const table = ref();
+    const tableKey = ref(1);
     const handleSizeChange = (value) => {
       context.emit("pageSizeChange", value);
     };
     const handleCurrentChange = (value) => {
       context.emit("currentPageChange", value);
     };
+    // 复选框改变
+    const checkboxChange = async (value, prop) => {
+      props.config.forEach(async (item) => {
+        if (item.prop === prop) {
+          item.isShow = value;
+        }
+      });
+      localStorage.setItem(
+        props.tableName,
+        JSON.stringify(
+          props.config.map((item) => {
+            return {
+              prop: item.prop,
+              isShow: item.isShow,
+              width: item.width,
+            };
+          })
+        )
+      );
+      // 强制重新渲染表格（慎用）
+      await nextTick();
+      tableKey.value++;
+    };
+    // 表头拖拽改变宽度
+    const handleHeaderDragend = async (newWidth, oldWidth, column) => {
+      props.config.forEach(async (item) => {
+        if (item.prop === column.property) {
+          item.width = newWidth;
+        }
+      });
+      localStorage.setItem(
+        props.tableName,
+        JSON.stringify(
+          props.config.map((item) => {
+            return {
+              prop: item.prop,
+              isShow: item.isShow,
+              width: item.width,
+            };
+          })
+        )
+      );
+      // 强制重新渲染表格（慎用）
+      await nextTick();
+      tableKey.value++;
+    };
+    // 销毁前
+    onUnmounted(() => {
+      window.onresize = null;
+    });
+    // 渲染前，获取缓存中的配置
+    onBeforeMount(() => {
+      // 可以自定义列
+      nextTick(() => {
+        if (props.isSetting && props.tableName) {
+          const localConfig =
+            JSON.parse(localStorage.getItem(props.tableName)) || [];
+          // 缓存中没有，使用默认配置
+          if (!localConfig.length) {
+            props.config.forEach((item) => {
+              item.isShow = true;
+            });
+          } else {
+            // 缓存中有，使用缓存中的配置
+            props.config.forEach((item) => {
+              const config = localConfig.find((i) => i.prop === item.prop);
+              if (config) {
+                item.isShow = config.isShow;
+                item.width = config.width;
+              } else {
+                item.isShow = true;
+              }
+            });
+          }
+          // 缓存
+          localStorage.setItem(
+            props.tableName,
+            JSON.stringify(
+              props.config.map((item) => {
+                return {
+                  prop: item.prop,
+                  isShow: item.isShow,
+                  width: item.width,
+                };
+              })
+            )
+          );
+        } else {
+          // 不可以自定义列，直接返回配置
+          props.config.forEach((item) => {
+            item.isShow = true;
+          });
+        }
+      });
+    });
     return {
       handleSizeChange,
       handleCurrentChange,
       table,
+      tableKey,
+      checkboxChange,
+      handleHeaderDragend,
     };
   },
   directives: {
@@ -285,27 +403,29 @@ const JzTable = {
       },
     },
   },
-  unmounted() {
-    window.onresize = null;
-  },
 };
 
-const _hoisted_1 = {
-  key: 0,
-  class: "tableTitle"
-};
-const _hoisted_2 = { class: "tableTitleWrap" };
-const _hoisted_3 = {
+const _hoisted_1 = { class: "tableTitleWrap" };
+const _hoisted_2 = {
   key: 0,
   class: "tableOperation"
 };
+const _hoisted_3 = {
+  key: 1,
+  class: "setting"
+};
 const _hoisted_4 = { class: "tableBody" };
 const _hoisted_5 = {
-  key: 1,
+  key: 0,
   class: "paginationWrap"
 };
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
+  const _component_Setting = resolveComponent("Setting");
+  const _component_el_icon = resolveComponent("el-icon");
+  const _component_el_button = resolveComponent("el-button");
+  const _component_el_checkbox = resolveComponent("el-checkbox");
+  const _component_el_popover = resolveComponent("el-popover");
   const _component_el_table_column = resolveComponent("el-table-column");
   const _component_el_table = resolveComponent("el-table");
   const _component_el_pagination = resolveComponent("el-pagination");
@@ -314,32 +434,69 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 
   return withDirectives((openBlock(), createBlock(_component_el_card, { class: "tableWrap" }, {
     default: withCtx(() => [
-      (_ctx.$slots.title)
-        ? (openBlock(), createElementBlock("div", _hoisted_1, [
-            renderSlot(_ctx.$slots, "title")
-          ]))
-        : createCommentVNode("v-if", true),
-      createElementVNode("div", _hoisted_2, [
-        (_ctx.$slots.operation)
-          ? (openBlock(), createElementBlock("div", _hoisted_3, [
+      createCommentVNode(" 标题 "),
+      createElementVNode("div", _hoisted_1, [
+        (_ctx.$slots.operation || _ctx.isSetting)
+          ? (openBlock(), createElementBlock("div", _hoisted_2, [
               renderSlot(_ctx.$slots, "operation")
+            ]))
+          : createCommentVNode("v-if", true),
+        (_ctx.isSetting)
+          ? (openBlock(), createElementBlock("div", _hoisted_3, [
+              createVNode(_component_el_popover, {
+                trigger: "click",
+                title: "自定义列",
+                placement: "bottom-end"
+              }, {
+                reference: withCtx(() => [
+                  createVNode(_component_el_button, null, {
+                    default: withCtx(() => [
+                      createVNode(_component_el_icon, null, {
+                        default: withCtx(() => [
+                          createVNode(_component_Setting, { style: {"width":"14px","height":"14px"} })
+                        ]),
+                        _: 1 /* STABLE */
+                      })
+                    ]),
+                    _: 1 /* STABLE */
+                  })
+                ]),
+                default: withCtx(() => [
+                  createElementVNode("div", null, [
+                    (openBlock(true), createElementBlock(Fragment, null, renderList(_ctx.config, (item) => {
+                      return (openBlock(), createElementBlock("div", {
+                        key: item.prop
+                      }, [
+                        createVNode(_component_el_checkbox, {
+                          "model-value": item.isShow,
+                          label: item.label,
+                          onChange: (value) => _ctx.checkboxChange(value, item.prop)
+                        }, null, 8 /* PROPS */, ["model-value", "label", "onChange"])
+                      ]))
+                    }), 128 /* KEYED_FRAGMENT */))
+                  ])
+                ]),
+                _: 1 /* STABLE */
+              })
             ]))
           : createCommentVNode("v-if", true)
       ]),
+      createCommentVNode(" 表格 "),
       createElementVNode("div", _hoisted_4, [
-        createVNode(_component_el_table, mergeProps({ stripe: "" }, { ..._ctx.attrs, ..._ctx.$attrs }, {
+        (openBlock(), createBlock(_component_el_table, mergeProps({ stripe: "" }, { ..._ctx.attrs, ..._ctx.$attrs }, {
           style: {"width":"100%"},
-          ref: "table"
+          ref: "table",
+          key: _ctx.tableKey,
+          onHeaderDragend: _ctx.handleHeaderDragend
         }), {
           default: withCtx(() => [
-            (openBlock(true), createElementBlock(Fragment, null, renderList(_ctx.config, (item) => {
-              return (openBlock(), createElementBlock(Fragment, {
-                key: item.prop
-              }, [
+            (openBlock(true), createElementBlock(Fragment, null, renderList(_ctx.config.filter((item) => item.isShow), (item, index) => {
+              return (openBlock(), createElementBlock(Fragment, { key: index }, [
                 (item.type === 'slot')
                   ? renderSlot(_ctx.$slots, item.prop, {
                       key: 0,
-                      class: "slot"
+                      class: "slot",
+                      slotProps: { ...item }
                     })
                   : (openBlock(), createElementBlock(Fragment, { key: 1 }, [
                       createCommentVNode(" 支持三级表头 "),
@@ -396,8 +553,9 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
             }), 128 /* KEYED_FRAGMENT */))
           ]),
           _: 3 /* FORWARDED */
-        }, 16 /* FULL_PROPS */)
+        }, 16 /* FULL_PROPS */, ["onHeaderDragend"]))
       ]),
+      createCommentVNode(" 分页 "),
       (_ctx.paginationConfig.pageIndex)
         ? (openBlock(), createElementBlock("div", _hoisted_5, [
             createVNode(_component_el_pagination, {
@@ -424,7 +582,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   ])
 }
 
-var css_248z = ".tableWrap[data-v-af0a3944] .tableTitleWrap[data-v-af0a3944] {\n  display: flex;\n  justify-content: space-between;\n}\n.tableWrap[data-v-af0a3944] .tableTitleWrap[data-v-af0a3944] .tableTitle[data-v-af0a3944] {\n  height: 32px;\n  line-height: 32px;\n}\n.tableWrap[data-v-af0a3944] .tableBody[data-v-af0a3944] {\n  margin-top: 10px;\n}\n.tableWrap[data-v-af0a3944] .paginationWrap[data-v-af0a3944] {\n  float: right;\n  margin: 10px 0;\n}\n";
+var css_248z = ".tableWrap[data-v-af0a3944] .tableTitleWrap[data-v-af0a3944] {\n  display: flex;\n  justify-content: space-between;\n}\n.tableWrap[data-v-af0a3944] .tableTitleWrap[data-v-af0a3944] .setting[data-v-af0a3944] {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n}\n.tableWrap[data-v-af0a3944] .tableBody[data-v-af0a3944] {\n  margin-top: 10px;\n}\n.tableWrap[data-v-af0a3944] .paginationWrap[data-v-af0a3944] {\n  float: right;\n  margin: 10px 0;\n}\n";
 styleInject(css_248z);
 
 JzTable.render = render;

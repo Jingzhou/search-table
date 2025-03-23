@@ -20,19 +20,28 @@
       :attrs="tableAttrs"
       :paginationConfig="paginationConfig"
       style="margin-top: 20px"
-      title="示例列表"
       @cell-click="cellClick"
       @pageSizeChange="pageSizeChange"
       @currentPageChange="currentPageChange"
+      :isSetting="true"
+      tableName="tableName"
     >
       <template v-slot:operation>
         <el-button type="primary">新增</el-button>
         <el-button type="primary">导出</el-button>
       </template>
-      <template v-slot:address>
-        <el-table-column label="地址">
+      <template v-slot:address="slotScope">
+        <el-table-column v-bind="slotScope.slotProps">
           <template #default="scope">
             {{ scope.row.address }}
+          </template>
+        </el-table-column>
+      </template>
+      <template #operate="slotScope">
+        <el-table-column v-bind="slotScope.slotProps">
+          <template #default>
+            <el-button type="primary">编辑</el-button>
+            <el-button type="primary">删除</el-button>
           </template>
         </el-table-column>
       </template>
@@ -96,12 +105,19 @@ export default {
       },
     ]);
     const tableConfig = ref([
-      { label: "日期", prop: "date", fixed: "right" },
-      { label: "姓名", prop: "name", formatter: formatterName },
-      { label: "地址", prop: "address", type: "slot" },
+      { label: "日期", prop: "date" },
+      { label: "地址11", prop: "address", type: "slot", width: 120 },
+      { label: "姓名1234", prop: "name1", formatter: formatterName },
+      {
+        label: "操作",
+        prop: "operate",
+        type: "slot",
+        width: 120,
+        fixed: "right",
+      },
     ]);
     const paginationConfig = ref({
-      currentPage: 1,
+      pageIndex: 1,
       pageSize: 10,
       total: 100,
     });
@@ -133,32 +149,30 @@ export default {
       data: [
         {
           date: "2016-05-03",
-          name: "Tom",
+          name1: "Tom",
           address: "No. 189, Grove St, Los Angeles",
         },
         {
           date: "2016-05-02",
-          name: "Tom",
+          name1: "Tom",
           address: "No. 189, Grove St, Los Angeles",
         },
         {
           date: "2016-05-04",
-          name: "Tom",
+          name1: "Tom",
           address: "No. 189, Grove St, Los Angeles",
         },
         {
           date: "2016-05-01",
-          name: "Tom",
+          name1: "Tom",
           address: "No. 189, Grove St, Los Angeles",
         },
       ],
     });
     const pageSizeChange = (value) => {
-      console.log(value);
       paginationConfig.value.pageSize = value;
     };
     const currentPageChange = (value) => {
-      console.log(value);
       paginationConfig.value.currentPage = value;
     };
     return {
