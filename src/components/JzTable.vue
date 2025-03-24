@@ -9,7 +9,12 @@
         <slot name="operation"></slot>
       </div>
       <div class="setting" v-if="isSetting">
-        <el-popover trigger="click" title="自定义列" placement="bottom-end">
+        <el-popover
+          trigger="click"
+          title="自定义列"
+          placement="bottom-end"
+          :popper-style="{ width: 'auto' }"
+        >
           <template #reference>
             <el-button>
               <el-icon>

@@ -51,9 +51,9 @@
 
 <script>
 import { ref } from "vue";
-// import JzSearch from "../src/components/JzSearch";
-// import JzTable from "../src/components/JzTable";
-import { JzSearch, JzTable } from "../dist/search-table.es";
+import JzSearch from "../src/components/JzSearch";
+import JzTable from "../src/components/JzTable";
+// import { JzSearch, JzTable } from "../dist/search-table.es";
 import { ElButton, ElInput, ElTableColumn } from "element-plus";
 
 export default {
@@ -107,7 +107,11 @@ export default {
     const tableConfig = ref([
       { label: "日期", prop: "date" },
       { label: "地址11", prop: "address", type: "slot", width: 120 },
-      { label: "姓名1234", prop: "name1", formatter: formatterName },
+      {
+        label: "姓名1234",
+        prop: "name1",
+        formatter: formatterName,
+      },
       {
         label: "操作",
         prop: "operate",

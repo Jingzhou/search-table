@@ -446,7 +446,8 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
               createVNode(_component_el_popover, {
                 trigger: "click",
                 title: "自定义列",
-                placement: "bottom-end"
+                placement: "bottom-end",
+                "popper-style": { width: 'auto' }
               }, {
                 reference: withCtx(() => [
                   createVNode(_component_el_button, null, {
