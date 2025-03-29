@@ -261,7 +261,8 @@ const JzTable = {
   },
   emits: ["pageSizeChange", "currentPageChange", "selectChange"],
   setup(props, context) {
-    const table = ref();
+    const table = ref(null);
+    let resizeObserver = null;
     const tableKey = ref(1);
     const tableHeight = ref("auto");
     const handleSizeChange = (value) => {
@@ -318,7 +319,9 @@ const JzTable = {
     };
     // 销毁前
     onUnmounted(() => {
-      window.onresize = null;
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
     });
     // 渲染前，获取缓存中的配置
     onBeforeMount(() => {
@@ -368,46 +371,56 @@ const JzTable = {
     // 渲染后，自适应高度
     onMounted(() => {
       if (props.isSelfAdaption) {
-        const selfAdaption = () => {
-          // 整个页面的高度
-          const pageHeight = props.selfAdaptionConfig.pageEl
-            ? document.getElementById(props.selfAdaptionConfig.pageEl)
-                .clientHeight
-            : 0;
-          // 除了table以外其他元素的高度
-          let elListHeight = 0;
-          const elList = props.selfAdaptionConfig.elList || [];
-          elList.forEach((el) => {
-            elListHeight += document.getElementById(el).clientHeight;
-          });
-          // 其他差值
-          const dValue = props.selfAdaptionConfig.dValue || 0;
-          const tableTitleH = document.getElementById(
-            `${props.tableName}TableTitleWrap`
-          ).clientHeight; // 表格标题高度
-          const paginationH = document.getElementById(
-            `${props.tableName}PaginationWrap`
-          ).clientHeight; // 分页高度
-          const tableBody = document.getElementById(
-            `${props.tableName}TableBody`
-          );
-          const elTable = tableBody
-            .getElementsByClassName("el-table")[0]
-            .getElementsByClassName("el-table__inner-wrapper")[0];
-          const elTableHeaderH = elTable.getElementsByClassName(
-            "el-table__header-wrapper"
-          )[0].clientHeight; // 表头高度
-          tableHeight.value = `${
-            pageHeight -
-            elListHeight -
-            tableTitleH -
-            elTableHeaderH -
-            paginationH -
-            dValue
-          }px`;
-        };
-        selfAdaption();
-        window.onresize = () => selfAdaption();
+        resizeObserver = new ResizeObserver((entries) => {
+          for (const entry of entries) {
+            // 在这里处理尺寸变化的逻辑;
+            // 整个页面的高度
+            const { height } = entry.contentRect;
+            const pageHeight = height;
+            // 除了table以外其他元素的高度
+            let elListHeight = 0;
+            const elList = props.selfAdaptionConfig.elList || [];
+            elList.forEach((el) => {
+              elListHeight += document.getElementById(el).clientHeight;
+            });
+            // 其他差值
+            const dValue = props.selfAdaptionConfig.dValue || 0;
+            const tableTitleH = document.getElementById(
+              `${props.tableName}TableTitleWrap`
+            ).clientHeight; // 表格标题高度
+            const paginationH = document.getElementById(
+              `${props.tableName}PaginationWrap`
+            ).clientHeight; // 分页高度
+            const tableBody = document.getElementById(
+              `${props.tableName}TableBody`
+            );
+            const elTable = tableBody
+              .getElementsByClassName("el-table")[0]
+              .getElementsByClassName("el-table__inner-wrapper")[0];
+            const elTableHeaderH = elTable.getElementsByClassName(
+              "el-table__header-wrapper"
+            )[0].clientHeight; // 表头高度
+            console.log(
+              pageHeight,
+              elListHeight,
+              tableTitleH,
+              elTableHeaderH,
+              paginationH,
+              dValue
+            );
+            tableHeight.value = `${
+              pageHeight -
+              elListHeight -
+              tableTitleH -
+              elTableHeaderH -
+              paginationH -
+              dValue
+            }px`;
+          }
+        });
+        resizeObserver.observe(
+          document.getElementById(props.selfAdaptionConfig.pageEl)
+        );
       }
     });
     return {
@@ -508,7 +521,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         (openBlock(), createBlock(_component_el_table, mergeProps({ stripe: "" }, { ..._ctx.attrs, ..._ctx.$attrs }, {
           style: {"width":"100%"},
           ref: "table",
-          key: _ctx.tableKey,
+          key: `${_ctx.tableName}${_ctx.tableKey}`,
           onHeaderDragend: _ctx.handleHeaderDragend,
           "max-height": _ctx.tableHeight
         }), {

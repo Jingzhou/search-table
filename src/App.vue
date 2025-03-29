@@ -16,39 +16,85 @@
         />
       </template>
     </JzSearch>
-    <JzTable
-      componentName="div"
-      :config="tableConfig"
-      :attrs="tableAttrs"
-      style="margin-top: 20px"
-      @cell-click="cellClick"
-      @pageSizeChange="pageSizeChange"
-      @currentPageChange="currentPageChange"
-      :isSetting="true"
-      tableName="tableName"
-      :is-self-adaption="true"
-      :self-adaption-config="selfAdaptionConfig"
+    <el-tabs
+      v-model="activeName"
+      class="theYearProjectDataCard"
+      @tab-click="handleClick"
+      type="border-card"
     >
-      <template v-slot:operation>
-        <el-button type="primary">新增</el-button>
-        <el-button type="primary">导出</el-button>
-      </template>
-      <template v-slot:address="slotScope">
-        <el-table-column v-bind="slotScope.slotProps">
-          <template #default="scope">
-            {{ scope.row.address }}
+      <el-tab-pane label="新建项目" name="new">
+        <JzTable
+          componentName="div"
+          :config="tableConfig"
+          :attrs="tableAttrs"
+          style="margin-top: 20px"
+          @cell-click="cellClick"
+          @pageSizeChange="pageSizeChange"
+          @currentPageChange="currentPageChange"
+          :isSetting="true"
+          tableName="tableName1"
+          :is-self-adaption="true"
+          :self-adaption-config="selfAdaptionConfig"
+          v-if="activeName === 'new'"
+        >
+          <template v-slot:operation>
+            <el-button type="primary">新增</el-button>
+            <el-button type="primary">导出</el-button>
           </template>
-        </el-table-column>
-      </template>
-      <template #operate="slotScope">
-        <el-table-column v-bind="slotScope.slotProps">
-          <template #default>
-            <el-button type="primary">编辑</el-button>
-            <el-button type="primary">删除</el-button>
+          <template v-slot:address="slotScope">
+            <el-table-column v-bind="slotScope.slotProps">
+              <template #default="scope">
+                {{ scope.row.address }}
+              </template>
+            </el-table-column>
           </template>
-        </el-table-column>
-      </template>
-    </JzTable>
+          <template #operate="slotScope">
+            <el-table-column v-bind="slotScope.slotProps">
+              <template #default>
+                <el-button type="primary">编辑</el-button>
+                <el-button type="primary">删除</el-button>
+              </template>
+            </el-table-column>
+          </template>
+        </JzTable>
+      </el-tab-pane>
+      <el-tab-pane label="已创建项目" name="created">
+        <JzTable
+          componentName="div"
+          :config="tableConfig"
+          :attrs="tableAttrs"
+          style="margin-top: 20px"
+          @cell-click="cellClick"
+          @pageSizeChange="pageSizeChange"
+          @currentPageChange="currentPageChange"
+          :isSetting="true"
+          tableName="tableName2"
+          :is-self-adaption="true"
+          :self-adaption-config="selfAdaptionConfig"
+          v-if="activeName === 'created'"
+        >
+          <template v-slot:operation>
+            <el-button type="primary">新增</el-button>
+            <el-button type="primary">导出</el-button>
+          </template>
+          <template v-slot:address="slotScope">
+            <el-table-column v-bind="slotScope.slotProps">
+              <template #default="scope">
+                {{ scope.row.address }}
+              </template>
+            </el-table-column>
+          </template>
+          <template #operate="slotScope">
+            <el-table-column v-bind="slotScope.slotProps">
+              <template #default>
+                <el-button type="primary">编辑</el-button>
+                <el-button type="primary">删除</el-button>
+              </template>
+            </el-table-column>
+          </template>
+        </JzTable>
+      </el-tab-pane>
+    </el-tabs>
   </div>
 </template>
 
@@ -57,7 +103,13 @@ import { ref } from "vue";
 import JzSearch from "../src/components/JzSearch";
 import JzTable from "../src/components/JzTable";
 // import { JzSearch, JzTable } from "../dist/search-table.es";
-import { ElButton, ElInput, ElTableColumn } from "element-plus";
+import {
+  ElButton,
+  ElInput,
+  ElTableColumn,
+  ElTabs,
+  ElTabPane,
+} from "element-plus";
 
 export default {
   name: "App",
@@ -67,15 +119,18 @@ export default {
     ElButton,
     ElInput,
     ElTableColumn,
+    ElTabs,
+    ElTabPane,
   },
   setup() {
+    const activeName = ref("new");
     const formatterName = (row, column, cellValue, index) => {
       return `${cellValue}+${index}`;
     };
     const selfAdaptionConfig = {
       pageEl: "pageExample",
       elList: ["pageExampleSearch"],
-      dValue: 80,
+      dValue: 120,
     }; // 表格组件自适应参数
     const searchConfig = ref([
       {
@@ -294,6 +349,7 @@ export default {
       pageSizeChange,
       currentPageChange,
       selfAdaptionConfig,
+      activeName,
     };
   },
 };
@@ -329,5 +385,12 @@ body {
   padding: 20px;
   height: 100%;
   box-sizing: border-box;
+}
+.theYearProjectDataCard {
+  margin-top: 20px;
+  height: calc(100% - 140px);
+}
+.el-tab-pane {
+  height: 100%;
 }
 </style>
