@@ -1,11 +1,12 @@
 <!-- search、table使用示例 -->
 <template>
-  <div class="pageExample">
+  <div class="pageExample" id="pageExample">
     <JzSearch
       :config="searchConfig"
       :query="query"
       @onSearch="onSearch"
       @onCancel="onCancel"
+      id="pageExampleSearch"
     >
       <template v-slot:idNo>
         <el-input
@@ -16,15 +17,17 @@
       </template>
     </JzSearch>
     <JzTable
+      id
       :config="tableConfig"
       :attrs="tableAttrs"
-      :paginationConfig="paginationConfig"
       style="margin-top: 20px"
       @cell-click="cellClick"
       @pageSizeChange="pageSizeChange"
       @currentPageChange="currentPageChange"
       :isSetting="true"
       tableName="tableName"
+      :is-self-adaption="true"
+      :self-adaption-config="selfAdaptionConfig"
     >
       <template v-slot:operation>
         <el-button type="primary">新增</el-button>
@@ -69,6 +72,11 @@ export default {
     const formatterName = (row, column, cellValue, index) => {
       return `${cellValue}+${index}`;
     };
+    const selfAdaptionConfig = {
+      pageEl: "pageExample",
+      elList: ["pageExampleSearch"],
+      dValue: 120,
+    }; // 表格组件自适应参数
     const searchConfig = ref([
       {
         label: "状态",
@@ -171,6 +179,41 @@ export default {
           name1: "Tom",
           address: "No. 189, Grove St, Los Angeles",
         },
+        {
+          date: "2016-05-01",
+          name1: "Tom",
+          address: "No. 189, Grove St, Los Angeles",
+        },
+        {
+          date: "2016-05-01",
+          name1: "Tom",
+          address: "No. 189, Grove St, Los Angeles",
+        },
+        {
+          date: "2016-05-01",
+          name1: "Tom",
+          address: "No. 189, Grove St, Los Angeles",
+        },
+        {
+          date: "2016-05-01",
+          name1: "Tom",
+          address: "No. 189, Grove St, Los Angeles",
+        },
+        {
+          date: "2016-05-01",
+          name1: "Tom",
+          address: "No. 189, Grove St, Los Angeles",
+        },
+        {
+          date: "2016-05-01",
+          name1: "Tom",
+          address: "No. 189, Grove St, Los Angeles",
+        },
+        {
+          date: "2016-05-01",
+          name1: "Tom",
+          address: "No. 189, Grove St, Los Angeles",
+        },
       ],
     });
     const pageSizeChange = (value) => {
@@ -190,6 +233,7 @@ export default {
       paginationConfig,
       pageSizeChange,
       currentPageChange,
+      selfAdaptionConfig,
     };
   },
 };
@@ -223,5 +267,7 @@ body {
 }
 .pageExample {
   padding: 20px;
+  height: 100%;
+  box-sizing: border-box;
 }
 </style>

@@ -96,8 +96,9 @@
       </el-table>
     </div>
     <!-- 分页 -->
-    <div v-if="paginationConfig.pageIndex" class="paginationWrap">
+    <div class="paginationWrap">
       <el-pagination
+        v-if="paginationConfig.pageIndex"
         v-model:currentPage="paginationConfig.pageIndex"
         v-model:page-size="paginationConfig.pageSize"
         :page-sizes="
