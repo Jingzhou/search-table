@@ -2,10 +2,10 @@
   <component
     :is="componentName"
     class="tableWrap"
-    v-adaptiveHeight:[{selfAdaptionConfig,componentName}]="isSelfAdaption"
+    :id="`${tableName}TableWrap`"
   >
     <!-- 标题 -->
-    <div class="tableTitleWrap">
+    <div class="tableTitleWrap" :id="`${tableName}TableTitleWrap`">
       <div class="tableOperation" v-if="$slots.operation || isSetting">
         <slot name="operation"></slot>
       </div>
@@ -36,7 +36,7 @@
       </div>
     </div>
     <!-- 表格 -->
-    <div class="tableBody">
+    <div class="tableBody" :id="`${tableName}TableBody`">
       <el-table
         stripe
         v-bind="{ ...attrs, ...$attrs }"
@@ -44,6 +44,7 @@
         ref="table"
         :key="tableKey"
         @header-dragend="handleHeaderDragend"
+        :max-height="tableHeight"
       >
         <template
           v-for="(item, index) in config.filter((item) => item.isShow)"
@@ -97,7 +98,7 @@
       </el-table>
     </div>
     <!-- 分页 -->
-    <div class="paginationWrap">
+    <div class="paginationWrap" :id="`${tableName}PaginationWrap`">
       <el-pagination
         v-if="paginationConfig.pageIndex"
         v-model:currentPage="paginationConfig.pageIndex"
@@ -129,7 +130,7 @@
  * tableName: 表单的key，isSetting为true时生效，且必填
  * isSetting: 是否显示设置按钮
  * */
-import { ref, onUnmounted, onBeforeMount, nextTick } from "vue";
+import { ref, onUnmounted, onBeforeMount, onMounted, nextTick } from "vue";
 import {
   ElCard,
   ElTable,
@@ -181,7 +182,7 @@ const JzTable = {
     },
     tableName: {
       type: String,
-      default: null,
+      default: "",
     },
     isSetting: {
       type: Boolean,
@@ -196,6 +197,7 @@ const JzTable = {
   setup(props, context) {
     const table = ref();
     const tableKey = ref(1);
+    const tableHeight = ref("auto");
     const handleSizeChange = (value) => {
       context.emit("pageSizeChange", value);
     };
@@ -297,6 +299,51 @@ const JzTable = {
         }
       });
     });
+    // 渲染后，自适应高度
+    onMounted(() => {
+      if (props.isSelfAdaption) {
+        const selfAdaption = () => {
+          // 整个页面的高度
+          const pageHeight = props.selfAdaptionConfig.pageEl
+            ? document.getElementById(props.selfAdaptionConfig.pageEl)
+                .clientHeight
+            : 0;
+          // 除了table以外其他元素的高度
+          let elListHeight = 0;
+          const elList = props.selfAdaptionConfig.elList || [];
+          elList.forEach((el) => {
+            elListHeight += document.getElementById(el).clientHeight;
+          });
+          // 其他差值
+          const dValue = props.selfAdaptionConfig.dValue || 0;
+          const tableTitleH = document.getElementById(
+            `${props.tableName}TableTitleWrap`
+          ).clientHeight; // 表格标题高度
+          const paginationH = document.getElementById(
+            `${props.tableName}PaginationWrap`
+          ).clientHeight; // 分页高度
+          const tableBody = document.getElementById(
+            `${props.tableName}TableBody`
+          );
+          const elTable = tableBody
+            .getElementsByClassName("el-table")[0]
+            .getElementsByClassName("el-table__inner-wrapper")[0];
+          const elTableHeaderH = elTable.getElementsByClassName(
+            "el-table__header-wrapper"
+          )[0].clientHeight; // 表头高度
+          tableHeight.value = `${
+            pageHeight -
+            elListHeight -
+            tableTitleH -
+            elTableHeaderH -
+            paginationH -
+            dValue
+          }px`;
+        };
+        selfAdaption();
+        window.onresize = () => selfAdaption();
+      }
+    });
     return {
       handleSizeChange,
       handleCurrentChange,
@@ -304,45 +351,8 @@ const JzTable = {
       tableKey,
       checkboxChange,
       handleHeaderDragend,
+      tableHeight,
     };
-  },
-  directives: {
-    adaptiveHeight: {
-      mounted(el, binding) {
-        if (!binding.value) return;
-        // 整个页面的高度
-        const selfAdaption = () => {
-          const pageHeight = binding.arg.selfAdaptionConfig.pageEl
-            ? document.getElementById(binding.arg.selfAdaptionConfig.pageEl)
-                .clientHeight
-            : 0;
-          // 除了table以外其他元素的高度
-          let elListHeight = 0;
-          const elList = binding.arg.selfAdaptionConfig.elList || [];
-          elList.forEach((el) => {
-            elListHeight += document.getElementById(el).clientHeight;
-          });
-          // 其他差值
-          const dValue = binding.arg.selfAdaptionConfig.dValue || 0;
-          const cardBody =
-            binding.arg.componentName === "el-card"
-              ? el.getElementsByClassName("el-card__body")[0]
-              : el;
-          const tableTitleH =
-            cardBody.getElementsByClassName("tableTitleWrap")[0].clientHeight;
-          const paginationH =
-            cardBody.getElementsByClassName("paginationWrap")[0].clientHeight;
-          const tableBody = cardBody.getElementsByClassName("tableBody")[0];
-          const elTable = tableBody.getElementsByClassName("el-table")[0];
-          elTable.style.overflowY = "auto";
-          elTable.style.maxHeight = `${
-            pageHeight - elListHeight - tableTitleH - paginationH - dValue
-          }px`;
-        };
-        selfAdaption();
-        window.onresize = () => selfAdaption();
-      },
-    },
   },
 };
 export default JzTable;

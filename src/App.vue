@@ -75,7 +75,7 @@ export default {
     const selfAdaptionConfig = {
       pageEl: "pageExample",
       elList: ["pageExampleSearch"],
-      dValue: 120,
+      dValue: 80,
     }; // 表格组件自适应参数
     const searchConfig = ref([
       {
@@ -171,6 +171,66 @@ export default {
         },
         {
           date: "2016-05-04",
+          name1: "Tom",
+          address: "No. 189, Grove St, Los Angeles",
+        },
+        {
+          date: "2016-05-01",
+          name1: "Tom",
+          address: "No. 189, Grove St, Los Angeles",
+        },
+        {
+          date: "2016-05-01",
+          name1: "Tom",
+          address: "No. 189, Grove St, Los Angeles",
+        },
+        {
+          date: "2016-05-01",
+          name1: "Tom",
+          address: "No. 189, Grove St, Los Angeles",
+        },
+        {
+          date: "2016-05-01",
+          name1: "Tom",
+          address: "No. 189, Grove St, Los Angeles",
+        },
+        {
+          date: "2016-05-01",
+          name1: "Tom",
+          address: "No. 189, Grove St, Los Angeles",
+        },
+        {
+          date: "2016-05-01",
+          name1: "Tom",
+          address: "No. 189, Grove St, Los Angeles",
+        },
+        {
+          date: "2016-05-01",
+          name1: "Tom",
+          address: "No. 189, Grove St, Los Angeles",
+        },
+        {
+          date: "2016-05-01",
+          name1: "Tom",
+          address: "No. 189, Grove St, Los Angeles",
+        },
+        {
+          date: "2016-05-01",
+          name1: "Tom",
+          address: "No. 189, Grove St, Los Angeles",
+        },
+        {
+          date: "2016-05-01",
+          name1: "Tom",
+          address: "No. 189, Grove St, Los Angeles",
+        },
+        {
+          date: "2016-05-01",
+          name1: "Tom",
+          address: "No. 189, Grove St, Los Angeles",
+        },
+        {
+          date: "2016-05-01",
           name1: "Tom",
           address: "No. 189, Grove St, Los Angeles",
         },

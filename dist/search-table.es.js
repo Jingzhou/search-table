@@ -1,4 +1,4 @@
-import { toRefs, resolveComponent, openBlock, createBlock, withCtx, createVNode, createElementBlock, Fragment, renderList, createCommentVNode, mergeProps, renderSlot, createTextVNode, ref, onUnmounted, onBeforeMount, nextTick, resolveDirective, withDirectives, resolveDynamicComponent, createElementVNode } from 'vue';
+import { toRefs, resolveComponent, openBlock, createBlock, withCtx, createVNode, createElementBlock, Fragment, renderList, createCommentVNode, mergeProps, renderSlot, createTextVNode, ref, onUnmounted, onBeforeMount, nextTick, onMounted, resolveDynamicComponent, createElementVNode } from 'vue';
 import { ElCard, ElForm, ElFormItem, ElOption, ElSelect, ElInput, ElDatePicker, ElCascader, ElButton, ElTable, ElTableColumn, ElPagination, ElIcon, ElPopover, ElCheckbox } from 'element-plus';
 import { Setting } from '@element-plus/icons-vue';
 import 'element-plus/dist/index.css';
@@ -248,7 +248,7 @@ const JzTable = {
     },
     tableName: {
       type: String,
-      default: null,
+      default: "",
     },
     isSetting: {
       type: Boolean,
@@ -263,6 +263,7 @@ const JzTable = {
   setup(props, context) {
     const table = ref();
     const tableKey = ref(1);
+    const tableHeight = ref("auto");
     const handleSizeChange = (value) => {
       context.emit("pageSizeChange", value);
     };
@@ -364,6 +365,51 @@ const JzTable = {
         }
       });
     });
+    // 渲染后，自适应高度
+    onMounted(() => {
+      if (props.isSelfAdaption) {
+        const selfAdaption = () => {
+          // 整个页面的高度
+          const pageHeight = props.selfAdaptionConfig.pageEl
+            ? document.getElementById(props.selfAdaptionConfig.pageEl)
+                .clientHeight
+            : 0;
+          // 除了table以外其他元素的高度
+          let elListHeight = 0;
+          const elList = props.selfAdaptionConfig.elList || [];
+          elList.forEach((el) => {
+            elListHeight += document.getElementById(el).clientHeight;
+          });
+          // 其他差值
+          const dValue = props.selfAdaptionConfig.dValue || 0;
+          const tableTitleH = document.getElementById(
+            `${props.tableName}TableTitleWrap`
+          ).clientHeight; // 表格标题高度
+          const paginationH = document.getElementById(
+            `${props.tableName}PaginationWrap`
+          ).clientHeight; // 分页高度
+          const tableBody = document.getElementById(
+            `${props.tableName}TableBody`
+          );
+          const elTable = tableBody
+            .getElementsByClassName("el-table")[0]
+            .getElementsByClassName("el-table__inner-wrapper")[0];
+          const elTableHeaderH = elTable.getElementsByClassName(
+            "el-table__header-wrapper"
+          )[0].clientHeight; // 表头高度
+          tableHeight.value = `${
+            pageHeight -
+            elListHeight -
+            tableTitleH -
+            elTableHeaderH -
+            paginationH -
+            dValue
+          }px`;
+        };
+        selfAdaption();
+        window.onresize = () => selfAdaption();
+      }
+    });
     return {
       handleSizeChange,
       handleCurrentChange,
@@ -371,49 +417,12 @@ const JzTable = {
       tableKey,
       checkboxChange,
       handleHeaderDragend,
+      tableHeight,
     };
-  },
-  directives: {
-    adaptiveHeight: {
-      mounted(el, binding) {
-        if (!binding.value) return;
-        // 整个页面的高度
-        const selfAdaption = () => {
-          const pageHeight = binding.arg.selfAdaptionConfig.pageEl
-            ? document.getElementById(binding.arg.selfAdaptionConfig.pageEl)
-                .clientHeight
-            : 0;
-          // 除了table以外其他元素的高度
-          let elListHeight = 0;
-          const elList = binding.arg.selfAdaptionConfig.elList || [];
-          elList.forEach((el) => {
-            elListHeight += document.getElementById(el).clientHeight;
-          });
-          // 其他差值
-          const dValue = binding.arg.selfAdaptionConfig.dValue || 0;
-          const cardBody =
-            binding.arg.componentName === "el-card"
-              ? el.getElementsByClassName("el-card__body")[0]
-              : el;
-          const tableTitleH =
-            cardBody.getElementsByClassName("tableTitleWrap")[0].clientHeight;
-          const paginationH =
-            cardBody.getElementsByClassName("paginationWrap")[0].clientHeight;
-          const tableBody = cardBody.getElementsByClassName("tableBody")[0];
-          const elTable = tableBody.getElementsByClassName("el-table")[0];
-          elTable.style.overflowY = "auto";
-          elTable.style.maxHeight = `${
-            pageHeight - elListHeight - tableTitleH - paginationH - dValue
-          }px`;
-        };
-        selfAdaption();
-        window.onresize = () => selfAdaption();
-      },
-    },
   },
 };
 
-const _hoisted_1 = { class: "tableTitleWrap" };
+const _hoisted_1 = ["id"];
 const _hoisted_2 = {
   key: 0,
   class: "tableOperation"
@@ -422,8 +431,8 @@ const _hoisted_3 = {
   key: 1,
   class: "setting"
 };
-const _hoisted_4 = { class: "tableBody" };
-const _hoisted_5 = { class: "paginationWrap" };
+const _hoisted_4 = ["id"];
+const _hoisted_5 = ["id"];
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_Setting = resolveComponent("Setting");
@@ -434,12 +443,17 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_el_table_column = resolveComponent("el-table-column");
   const _component_el_table = resolveComponent("el-table");
   const _component_el_pagination = resolveComponent("el-pagination");
-  const _directive_adaptiveHeight = resolveDirective("adaptiveHeight");
 
-  return withDirectives((openBlock(), createBlock(resolveDynamicComponent(_ctx.componentName), { class: "tableWrap" }, {
+  return (openBlock(), createBlock(resolveDynamicComponent(_ctx.componentName), {
+    class: "tableWrap",
+    id: `${_ctx.tableName}TableWrap`
+  }, {
     default: withCtx(() => [
       createCommentVNode(" 标题 "),
-      createElementVNode("div", _hoisted_1, [
+      createElementVNode("div", {
+        class: "tableTitleWrap",
+        id: `${_ctx.tableName}TableTitleWrap`
+      }, [
         (_ctx.$slots.operation || _ctx.isSetting)
           ? (openBlock(), createElementBlock("div", _hoisted_2, [
               renderSlot(_ctx.$slots, "operation")
@@ -485,14 +499,18 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
               })
             ]))
           : createCommentVNode("v-if", true)
-      ]),
+      ], 8 /* PROPS */, _hoisted_1),
       createCommentVNode(" 表格 "),
-      createElementVNode("div", _hoisted_4, [
+      createElementVNode("div", {
+        class: "tableBody",
+        id: `${_ctx.tableName}TableBody`
+      }, [
         (openBlock(), createBlock(_component_el_table, mergeProps({ stripe: "" }, { ..._ctx.attrs, ..._ctx.$attrs }, {
           style: {"width":"100%"},
           ref: "table",
           key: _ctx.tableKey,
-          onHeaderDragend: _ctx.handleHeaderDragend
+          onHeaderDragend: _ctx.handleHeaderDragend,
+          "max-height": _ctx.tableHeight
         }), {
           default: withCtx(() => [
             (openBlock(true), createElementBlock(Fragment, null, renderList(_ctx.config.filter((item) => item.isShow), (item, index) => {
@@ -558,10 +576,13 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
             }), 128 /* KEYED_FRAGMENT */))
           ]),
           _: 3 /* FORWARDED */
-        }, 16 /* FULL_PROPS */, ["onHeaderDragend"]))
-      ]),
+        }, 16 /* FULL_PROPS */, ["onHeaderDragend", "max-height"]))
+      ], 8 /* PROPS */, _hoisted_4),
       createCommentVNode(" 分页 "),
-      createElementVNode("div", _hoisted_5, [
+      createElementVNode("div", {
+        class: "paginationWrap",
+        id: `${_ctx.tableName}PaginationWrap`
+      }, [
         (_ctx.paginationConfig.pageIndex)
           ? (openBlock(), createBlock(_component_el_pagination, {
               key: 0,
@@ -580,12 +601,10 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
               onCurrentChange: _ctx.handleCurrentChange
             }, null, 8 /* PROPS */, ["currentPage", "page-size", "page-sizes", "total", "onSizeChange", "onCurrentChange"]))
           : createCommentVNode("v-if", true)
-      ])
+      ], 8 /* PROPS */, _hoisted_5)
     ]),
     _: 3 /* FORWARDED */
-  })), [
-    [_directive_adaptiveHeight, _ctx.isSelfAdaption, {selfAdaptionConfig: _ctx.selfAdaptionConfig,componentName: _ctx.componentName}]
-  ])
+  }, 8 /* PROPS */, ["id"]))
 }
 
 var css_248z = ".tableWrap[data-v-af0a3944] .tableTitleWrap[data-v-af0a3944] {\n  display: flex;\n  justify-content: space-between;\n}\n.tableWrap[data-v-af0a3944] .tableTitleWrap[data-v-af0a3944] .setting[data-v-af0a3944] {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n}\n.tableWrap[data-v-af0a3944] .tableBody[data-v-af0a3944] {\n  margin-top: 10px;\n}\n.tableWrap[data-v-af0a3944] .paginationWrap[data-v-af0a3944] {\n  float: right;\n  margin: 10px 0;\n}\n";
