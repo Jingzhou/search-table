@@ -1,4 +1,4 @@
-import { toRefs, resolveComponent, openBlock, createBlock, withCtx, createVNode, createElementBlock, Fragment, renderList, createCommentVNode, mergeProps, renderSlot, createTextVNode, ref, onUnmounted, onBeforeMount, nextTick, resolveDirective, withDirectives, createElementVNode } from 'vue';
+import { toRefs, resolveComponent, openBlock, createBlock, withCtx, createVNode, createElementBlock, Fragment, renderList, createCommentVNode, mergeProps, renderSlot, createTextVNode, ref, onUnmounted, onBeforeMount, nextTick, resolveDirective, withDirectives, resolveDynamicComponent, createElementVNode } from 'vue';
 import { ElCard, ElForm, ElFormItem, ElOption, ElSelect, ElInput, ElDatePicker, ElCascader, ElButton, ElTable, ElTableColumn, ElPagination, ElIcon, ElPopover, ElCheckbox } from 'element-plus';
 import { Setting } from '@element-plus/icons-vue';
 import 'element-plus/dist/index.css';
@@ -254,6 +254,10 @@ const JzTable = {
       type: Boolean,
       default: false,
     },
+    componentName: {
+      type: String,
+      default: "el-card",
+    },
   },
   emits: ["pageSizeChange", "currentPageChange", "selectChange"],
   setup(props, context) {
@@ -375,18 +379,23 @@ const JzTable = {
         if (!binding.value) return;
         // 整个页面的高度
         const selfAdaption = () => {
-          const pageHeight = binding.arg.pageEl
-            ? document.getElementById(binding.arg.pageEl).clientHeight
+          const pageHeight = binding.arg.selfAdaptionConfig.pageEl
+            ? document.getElementById(binding.arg.selfAdaptionConfig.pageEl)
+                .clientHeight
             : 0;
           // 除了table以外其他元素的高度
           let elListHeight = 0;
-          const elList = binding.arg.elList || [];
+          const elList = binding.arg.selfAdaptionConfig.elList || [];
           elList.forEach((el) => {
             elListHeight += document.getElementById(el).clientHeight;
           });
           // 其他差值
-          const dValue = binding.arg.dValue || 0;
-          const cardBody = el.getElementsByClassName("el-card__body")[0];
+          const dValue = binding.arg.selfAdaptionConfig.dValue || 0;
+          const cardBody =
+            binding.arg.componentName === "el-card"
+              ? el.getElementsByClassName("el-card__body")[0]
+              : el;
+          console.log(el);
           const tableTitleH =
             cardBody.getElementsByClassName("tableTitleWrap")[0].clientHeight;
           const paginationH =
@@ -415,10 +424,7 @@ const _hoisted_3 = {
   class: "setting"
 };
 const _hoisted_4 = { class: "tableBody" };
-const _hoisted_5 = {
-  key: 0,
-  class: "paginationWrap"
-};
+const _hoisted_5 = { class: "paginationWrap" };
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_Setting = resolveComponent("Setting");
@@ -429,10 +435,9 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   const _component_el_table_column = resolveComponent("el-table-column");
   const _component_el_table = resolveComponent("el-table");
   const _component_el_pagination = resolveComponent("el-pagination");
-  const _component_el_card = resolveComponent("el-card");
   const _directive_adaptiveHeight = resolveDirective("adaptiveHeight");
 
-  return withDirectives((openBlock(), createBlock(_component_el_card, { class: "tableWrap" }, {
+  return withDirectives((openBlock(), createBlock(resolveDynamicComponent(_ctx.componentName), { class: "tableWrap" }, {
     default: withCtx(() => [
       createCommentVNode(" 标题 "),
       createElementVNode("div", _hoisted_1, [
@@ -557,9 +562,10 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
         }, 16 /* FULL_PROPS */, ["onHeaderDragend"]))
       ]),
       createCommentVNode(" 分页 "),
-      (_ctx.paginationConfig.pageIndex)
-        ? (openBlock(), createElementBlock("div", _hoisted_5, [
-            createVNode(_component_el_pagination, {
+      createElementVNode("div", _hoisted_5, [
+        (_ctx.paginationConfig.pageIndex)
+          ? (openBlock(), createBlock(_component_el_pagination, {
+              key: 0,
               currentPage: _ctx.paginationConfig.pageIndex,
               "onUpdate:currentPage": _cache[0] || (_cache[0] = $event => ((_ctx.paginationConfig.pageIndex) = $event)),
               "page-size": _ctx.paginationConfig.pageSize,
@@ -573,13 +579,13 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
               total: _ctx.paginationConfig.total,
               onSizeChange: _ctx.handleSizeChange,
               onCurrentChange: _ctx.handleCurrentChange
-            }, null, 8 /* PROPS */, ["currentPage", "page-size", "page-sizes", "total", "onSizeChange", "onCurrentChange"])
-          ]))
-        : createCommentVNode("v-if", true)
+            }, null, 8 /* PROPS */, ["currentPage", "page-size", "page-sizes", "total", "onSizeChange", "onCurrentChange"]))
+          : createCommentVNode("v-if", true)
+      ])
     ]),
     _: 3 /* FORWARDED */
   })), [
-    [_directive_adaptiveHeight, _ctx.isSelfAdaption, _ctx.selfAdaptionConfig]
+    [_directive_adaptiveHeight, _ctx.isSelfAdaption, {selfAdaptionConfig: _ctx.selfAdaptionConfig,componentName: _ctx.componentName}]
   ])
 }
 

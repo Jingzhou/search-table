@@ -1,7 +1,8 @@
 <template>
-  <el-card
+  <component
+    :is="componentName"
     class="tableWrap"
-    v-adaptiveHeight:[selfAdaptionConfig]="isSelfAdaption"
+    v-adaptiveHeight:[{selfAdaptionConfig,componentName}]="isSelfAdaption"
   >
     <!-- 标题 -->
     <div class="tableTitleWrap">
@@ -112,7 +113,7 @@
         @current-change="handleCurrentChange"
       />
     </div>
-  </el-card>
+  </component>
 </template>
 
 <script>
@@ -185,6 +186,10 @@ const JzTable = {
     isSetting: {
       type: Boolean,
       default: false,
+    },
+    componentName: {
+      type: String,
+      default: "el-card",
     },
   },
   emits: ["pageSizeChange", "currentPageChange", "selectChange"],
@@ -307,18 +312,23 @@ const JzTable = {
         if (!binding.value) return;
         // 整个页面的高度
         const selfAdaption = () => {
-          const pageHeight = binding.arg.pageEl
-            ? document.getElementById(binding.arg.pageEl).clientHeight
+          const pageHeight = binding.arg.selfAdaptionConfig.pageEl
+            ? document.getElementById(binding.arg.selfAdaptionConfig.pageEl)
+                .clientHeight
             : 0;
           // 除了table以外其他元素的高度
           let elListHeight = 0;
-          const elList = binding.arg.elList || [];
+          const elList = binding.arg.selfAdaptionConfig.elList || [];
           elList.forEach((el) => {
             elListHeight += document.getElementById(el).clientHeight;
           });
           // 其他差值
-          const dValue = binding.arg.dValue || 0;
-          const cardBody = el.getElementsByClassName("el-card__body")[0];
+          const dValue = binding.arg.selfAdaptionConfig.dValue || 0;
+          const cardBody =
+            binding.arg.componentName === "el-card"
+              ? el.getElementsByClassName("el-card__body")[0]
+              : el;
+          console.log(el);
           const tableTitleH =
             cardBody.getElementsByClassName("tableTitleWrap")[0].clientHeight;
           const paginationH =

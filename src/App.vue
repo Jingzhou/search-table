@@ -17,7 +17,7 @@
       </template>
     </JzSearch>
     <JzTable
-      id
+      componentName="div"
       :config="tableConfig"
       :attrs="tableAttrs"
       style="margin-top: 20px"
