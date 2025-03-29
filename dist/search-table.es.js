@@ -395,7 +395,6 @@ const JzTable = {
             binding.arg.componentName === "el-card"
               ? el.getElementsByClassName("el-card__body")[0]
               : el;
-          console.log(el);
           const tableTitleH =
             cardBody.getElementsByClassName("tableTitleWrap")[0].clientHeight;
           const paginationH =
