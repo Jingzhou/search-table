@@ -61,14 +61,12 @@
       <el-tab-pane label="已创建项目" name="created">
         <JzTable
           componentName="div"
-          :config="tableConfig"
+          :config="tableConfig1"
           :attrs="tableAttrs"
           style="margin-top: 20px"
           @cell-click="cellClick"
           @pageSizeChange="pageSizeChange"
           @currentPageChange="currentPageChange"
-          :isSetting="true"
-          tableName="tableName2"
           :is-self-adaption="true"
           :self-adaption-config="selfAdaptionConfig"
           v-if="activeName === 'created'"
@@ -168,6 +166,22 @@ export default {
       },
     ]);
     const tableConfig = ref([
+      { label: "日期", prop: "date", notSetting: true },
+      { label: "地址11", prop: "address", type: "slot", width: 120 },
+      {
+        label: "姓名1234",
+        prop: "name1",
+        formatter: formatterName,
+      },
+      {
+        label: "操作",
+        prop: "operate",
+        type: "slot",
+        width: 120,
+        fixed: "right",
+      },
+    ]);
+    const tableConfig1 = ref([
       { label: "日期", prop: "date" },
       { label: "地址11", prop: "address", type: "slot", width: 120 },
       {
@@ -343,6 +357,7 @@ export default {
       onSearch,
       onCancel,
       tableConfig,
+      tableConfig1,
       tableAttrs,
       cellClick,
       paginationConfig,

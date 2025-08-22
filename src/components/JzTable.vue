@@ -24,7 +24,10 @@
             </el-button>
           </template>
           <div>
-            <div v-for="item in config" :key="item.prop">
+            <div
+              v-for="item in config.filter((item) => !item.notSetting)"
+              :key="item.prop"
+            >
               <el-checkbox
                 :model-value="item.isShow"
                 :label="item.label"
@@ -230,26 +233,28 @@ const JzTable = {
     };
     // 表头拖拽改变宽度
     const handleHeaderDragend = async (newWidth, oldWidth, column) => {
-      props.config.forEach(async (item) => {
-        if (item.prop === column.property) {
-          item.width = newWidth;
-        }
-      });
-      localStorage.setItem(
-        props.tableName,
-        JSON.stringify(
-          props.config.map((item) => {
-            return {
-              prop: item.prop,
-              isShow: item.isShow,
-              width: item.width,
-            };
-          })
-        )
-      );
-      // 强制重新渲染表格（慎用）
-      await nextTick();
-      tableKey.value++;
+      if (props.isSetting && props.tableName) {
+        props.config.forEach(async (item) => {
+          if (item.prop === column.property) {
+            item.width = newWidth;
+          }
+        });
+        localStorage.setItem(
+          props.tableName,
+          JSON.stringify(
+            props.config.map((item) => {
+              return {
+                prop: item.prop,
+                isShow: item.isShow,
+                width: item.width,
+              };
+            })
+          )
+        );
+        // 强制重新渲染表格（慎用）
+        await nextTick();
+        tableKey.value++;
+      }
     };
     // 销毁前
     onUnmounted(() => {
@@ -334,14 +339,6 @@ const JzTable = {
             const elTableHeaderH = elTable.getElementsByClassName(
               "el-table__header-wrapper"
             )[0].clientHeight; // 表头高度
-            console.log(
-              pageHeight,
-              elListHeight,
-              tableTitleH,
-              elTableHeaderH,
-              paginationH,
-              dValue
-            );
             tableHeight.value = `${
               pageHeight -
               elListHeight -

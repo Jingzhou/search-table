@@ -400,14 +400,6 @@ const JzTable = {
             const elTableHeaderH = elTable.getElementsByClassName(
               "el-table__header-wrapper"
             )[0].clientHeight; // 表头高度
-            console.log(
-              pageHeight,
-              elListHeight,
-              tableTitleH,
-              elTableHeaderH,
-              paginationH,
-              dValue
-            );
             tableHeight.value = `${
               pageHeight -
               elListHeight -
