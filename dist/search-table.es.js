@@ -296,26 +296,28 @@ const JzTable = {
     };
     // 表头拖拽改变宽度
     const handleHeaderDragend = async (newWidth, oldWidth, column) => {
-      props.config.forEach(async (item) => {
-        if (item.prop === column.property) {
-          item.width = newWidth;
-        }
-      });
-      localStorage.setItem(
-        props.tableName,
-        JSON.stringify(
-          props.config.map((item) => {
-            return {
-              prop: item.prop,
-              isShow: item.isShow,
-              width: item.width,
-            };
-          })
-        )
-      );
-      // 强制重新渲染表格（慎用）
-      await nextTick();
-      tableKey.value++;
+      if (props.isSetting && props.tableName) {
+        props.config.forEach(async (item) => {
+          if (item.prop === column.property) {
+            item.width = newWidth;
+          }
+        });
+        localStorage.setItem(
+          props.tableName,
+          JSON.stringify(
+            props.config.map((item) => {
+              return {
+                prop: item.prop,
+                isShow: item.isShow,
+                width: item.width,
+              };
+            })
+          )
+        );
+        // 强制重新渲染表格（慎用）
+        await nextTick();
+        tableKey.value++;
+      }
     };
     // 销毁前
     onUnmounted(() => {
@@ -487,7 +489,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
                 ]),
                 default: withCtx(() => [
                   createElementVNode("div", null, [
-                    (openBlock(true), createElementBlock(Fragment, null, renderList(_ctx.config, (item) => {
+                    (openBlock(true), createElementBlock(Fragment, null, renderList(_ctx.config.filter((item) => !item.notSetting), (item) => {
                       return (openBlock(), createElementBlock("div", {
                         key: item.prop
                       }, [
