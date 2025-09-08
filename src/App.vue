@@ -98,9 +98,9 @@
 
 <script>
 import { ref } from "vue";
-import JzSearch from "../src/components/JzSearch";
-import JzTable from "../src/components/JzTable";
-// import { JzSearch, JzTable } from "../dist/search-table.es";
+// import JzSearch from "../src/components/JzSearch";
+// import JzTable from "../src/components/JzTable";
+import { JzSearch, JzTable } from "../dist/search-table.es";
 import {
   ElButton,
   ElInput,
